@@ -3,19 +3,19 @@
 @Date:   2016-06-08T16:19:22+07:00
 @Email:  diastaufik@gmail.com
 @Last modified by:   root
-@Last modified time: 2016-06-09T04:49:22+07:00
+@Last modified time: 2016-06-09T04:58:11+07:00
 -->
 
 <?php
 //TOKEN Telegram & URL API Telegram Bot
-define('BOT_TOKEN', '218218826:AAHhuAaFT2OBBjHytsP1zVt5dnZpe1NSN_E');
+define('BOT_TOKEN', 'TOKEN');
 define('API_URL', 'https://api.telegram.org/bot'.BOT_TOKEN.'/');
 
 //TOKEN API Simi-Simi
-define('SIMI_TOKEN', '0f922683-3829-4ac7-ad20-27900a96da29');
+define('SIMI_TOKEN', 'TOKEN');
 
 //TOKEN Muslimsalat.com & Url API Muslimsalat.com
-define('MUSLIMSALAT_KEY', '4ee4ec12800e068b6f9ea3df598ef738');
+define('MUSLIMSALAT_KEY', 'TOKEN');
 define('MUSLIMSALAT_API', 'http://muslimsalat.com/jakarta.json?key='. MUSLIMSALAT_KEY);
 
 //Membaca Pesan yang masuk dari client, chatID, chatContent, messageId
