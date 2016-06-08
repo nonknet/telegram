@@ -1,18 +1,45 @@
 <!--
-@Author: Dias Taufik Rahman
-@Date:   2016-06-08T13:46:37+07:00
-@Last modified by:   mydisha
-@Last modified time: 2016-06-08T14:01:37+07:00
+@Author: Dias Taufik Rahman <root>
+@Date:   2016-06-08T16:19:22+07:00
+@Email:  diastaufik@gmail.com
+@Last modified by:   root
+@Last modified time: 2016-06-09T04:49:22+07:00
 -->
 
 <?php
+//TOKEN Telegram & URL API Telegram Bot
+define('BOT_TOKEN', '218218826:AAHhuAaFT2OBBjHytsP1zVt5dnZpe1NSN_E');
+define('API_URL', 'https://api.telegram.org/bot'.BOT_TOKEN.'/');
 
-$telegram = 'API-KEY-DISINI'; //API Key untuk Bot Telegram
-$simikey = 'API-KEY-DISINI'; //Api key untuk simi simi
-$url_telegram = 'https://api.telegram.org/bot' . $telegram . '/getUpdates'; //URL Telegram
+//TOKEN API Simi-Simi
+define('SIMI_TOKEN', '0f922683-3829-4ac7-ad20-27900a96da29');
 
-// Fungsi CURL
+//TOKEN Muslimsalat.com & Url API Muslimsalat.com
+define('MUSLIMSALAT_KEY', '4ee4ec12800e068b6f9ea3df598ef738');
+define('MUSLIMSALAT_API', 'http://muslimsalat.com/jakarta.json?key='. MUSLIMSALAT_KEY);
 
+//Membaca Pesan yang masuk dari client, chatID, chatContent, messageId
+$content = file_get_contents("php://input");
+$update = json_decode($content, true);
+$chatID = $update["message"]["chat"]["id"];
+$chatContent = $update["message"]["text"];
+$messageId = $update["message"]["message_id"];
+
+//Melakukan logging untuk memeriksa apakah konten yang diinginkan ada atau tidak
+checkJSON($chatID,$update);
+
+//Fungsi menyimpan string kedalam sebuah file dengan nama log.txt
+function checkJSON($chatID,$update){
+
+$myFile = "log.txt";
+$updateArray = print_r($update,TRUE);
+$fh = fopen($myFile, 'a') or die("can't open file");
+fwrite($fh, $chatID ."\n\n");
+fwrite($fh, $updateArray."\n\n");
+fclose($fh);
+}
+
+//Perintah CURL
 function exec_curl($url)
 {
   $exec = curl_init();
@@ -32,50 +59,45 @@ function exec_curl($url)
   return $out;
 }
 
-//Fungsi simpan log
+//Mengambil response dari API simi-simi
+$responsesimi = json_decode(exec_curl('http://sandbox.api.simsimi.com/request.p?key=' . SIMI_TOKEN . '&lc=id&ft=1.0&text=' . urlencode($chatContent)), true);
 
-function save($text) {
-    fwrite(fopen('log.txt', "a+"), $text . PHP_EOL);
-    fclose(fopen('log.txt', "a+"));
+//Cek apakah kita sudah sampai pada API yang ditentukan simi-simi
+if ($responsesimi['msg'] == 'Daily Request Query Limit Exceeded.')
+{
+  //Kembalikan nilai jika API yang digunakan sudah di limit
+  $chatsimi = 'Udahan ah capek mau bobo!';
+} else
+{
+  //Mereplace string "simi" menjadi "Chitanda-chwan"
+  $chatsimi = str_replace("simi", "Chitanda-chwan", $responsesimi['response']);
 }
-//Dapatkan response dari api telegram
 
-$response = json_decode(exec_curl($url_telegram), true);
-
-  //Jika response = OK
-  if ($response['ok'] == 1)
-  {
-  foreach ($response['result'] as $d) {
-
-    foreach ($d as $c)
-    {
-      // Simpan Chat, chat id, chat reply terakhir dari client kedalam variable $buff
-      $buff = array('isichat' => $c['text'], 'chatid' => $c['chat']['id'], 'message_id' => $c['message_id']);
-    }
-  }
-
-//Dapatkan response dari api simi simi dan memasukkan hasil chat dari client telegram
-//Kedalam kueri
-  $responsesimi = json_decode(exec_curl('http://sandbox.api.simsimi.com/request.p?key=' . $simikey . '&lc=id&ft=1.0&text=' . urlencode($buff['isichat'])), true);
-
-  //Jika response sukses
-  if($responsesimi['result'] == 100)
-  {
-    //Simpan hasil kedalam array
-    $pesan = array (
-    'chat_id'             => $buff['chatid'],
-    'text'                => $responsesimi['response'],
-    'reply_to_message_id' => $buff['message_id']
-  );
-    //Kirim chat balasan simi simi ke client berdasarkan id nya.
-    $send = json_decode(exec_curl("https://api.telegram.org/bot" . $telegram . "/sendMessage?chat_id=". $pesan['chat_id'] . "&text=" . $pesan['text'] . "&reply_to_message_id=". $pesan['reply_to_message_id']), true);
-    //Simpan ke log jika sukses
-    save('sukses');
-  } else {
-    //Simpan log jika gagal
-    save($response['description']);
-  }
+//Cek command yang dikirim dari client Telegram
+if ($chatContent == '/tentangbot')
+{
+  //Kembalikan hasil ke client
+  $reply = sendMessage('Bot Cerewet [BETA] dibuat dengan asal-asalan di kosan gracia');
+  //Cek untuk command Jadwal Imsak
+} elseif ($chatContent == '/jadwalimsak') {
+  $jadwal = json_decode(exec_curl(MUSLIMSALAT_API), true);
+  //Mengambil data jadwal imsak hari ini dari API MUSLIM SALAT
+  foreach ($jadwal['items'] as $d) {
+    $buff = $d['fajr'];
+  };
+  //Mengembalikan response yang didapat ke client Telegram
+  $reply = sendMessage('Jadwal imsak hari ini nih mblo : '. $buff);
 } else {
-    //Simpan log jika gagal
-    save($response['description']);
+  //Jika tidak ada command, kembalikan hasil chat yang diambil dari simi-simi
+  $reply =  sendMessage($chatsimi);
+}
+
+//Menyiapkan pesan yang ingin dikirimkan ke client
+$sendto =API_URL."sendmessage?chat_id=".$chatID."&text=".$reply."&reply_to_message_id=".$messageId;
+file_get_contents($sendto);
+
+function sendMessage($isi){
+//Fungsi untuk set isi pesan berdasarkan inputan parameter $isi
+$message = $isi;
+return $message;
 }
