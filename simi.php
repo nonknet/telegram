@@ -8,11 +8,11 @@
 
 <?php
 //TOKEN Telegram & URL API Telegram Bot
-define('BOT_TOKEN', 'TOKEN');
+define('BOT_TOKEN', '536596192:AAEkE0hSpim7eELbZIgAAWZInQiP349ycvU');
 define('API_URL', 'https://api.telegram.org/bot'.BOT_TOKEN.'/');
 
 //TOKEN API Simi-Simi
-define('SIMI_TOKEN', 'TOKEN');
+define('SIMI_TOKEN', 'db6a90c1-5e62-46f1-8cd0-7f44f364480a');
 
 //TOKEN Muslimsalat.com & Url API Muslimsalat.com
 define('MUSLIMSALAT_KEY', 'TOKEN');
@@ -77,7 +77,7 @@ if ($responsesimi['msg'] == 'Daily Request Query Limit Exceeded.')
 if ($chatContent == '/tentangbot')
 {
   //Kembalikan hasil ke client
-  $reply = sendMessage('Bot Cerewet [BETA] dibuat dengan asal-asalan di kosan gracia');
+  $reply = sendMessage('Bot Cerewet [BETA] dibuat dengan asal-asalan di dalam tanah');
   //Cek untuk command Jadwal Imsak
 } elseif ($chatContent == '/jadwalimsak') {
   $jadwal = json_decode(exec_curl(MUSLIMSALAT_API), true);
